@@ -26,11 +26,11 @@ A consumer runs in parallel to grab the change and update the state of the semap
     │   │   └── mysqld.cnf
     │   ├── TrafficLight-fs2
     │   │   └── src
-    │   │   │   ├── src
+    │   │   │   ├── main
     │   │   │   └── test
     │   ├── TrafficLight-akkaStream
     │   │   └── src
-    │   │   │   ├── src
+    │   │   │   ├── main
     │   │   │   └── test
     └── README.md
 
