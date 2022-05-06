@@ -1,0 +1,31 @@
+version: "3.7"
+
+services:
+  mockServer:
+    image: mockserver/mockserver:5.13.2
+    command: -logLevel DEBUG -serverPort 1090 -proxyRemotePort 80 -proxyRemoteHost www.mock-server.com
+    ports:
+      - 1080:1090
+    environment:
+      MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/initializerJson.json
+    volumes:
+      - type: bind
+        source: ./external_data_mock
+        target: /config
+
+  db:
+    image: mysql:5.7
+    ports:
+      - 3307:3306
+      - 33060:33060
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+    volumes:
+      - ./mysql/createTrafficLight.sql:/docker-entrypoint-initdb.d/createTrafficLight.sql
+      - ./mysql:/etc/mysql/mysql.conf.d
+    healthcheck:
+      test: "/etc/init.d/mysql status"
+      interval: 20s
+      timeout: 15s
+      retries: 3

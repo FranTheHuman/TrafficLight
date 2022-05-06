@@ -1,0 +1,98 @@
+[
+  {
+    "httpRequest": {
+      "path": "/reporting/v3/conversion-details/2",
+      "method" : "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": [
+        {
+          "conversionDetails": {
+            "traffic_light": 5,
+            "status": "RED",
+            "changed_at": "2022-05-06T15:00:00Z"
+          },
+          "street": 2,
+          "time": "2022-05-06T15:00:00Z"
+        },
+        {
+          "conversionDetails": {
+            "traffic_light": 6,
+            "status": "GREEN",
+            "changed_at": "2022-05-06T15:00:00Z"
+          },
+          "street": 2,
+          "time": "2022-05-06T15:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/reporting/v3/conversion-details/3",
+      "method" : "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": [
+        {
+          "conversionDetails": {
+            "traffic_light": 8,
+            "status": "RED",
+            "changed_at": "2022-05-06T15:00:00Z"
+          },
+          "street": 3,
+          "time": "2022-05-06T15:00:00Z"
+        },
+        {
+          "conversionDetails": {
+            "traffic_light": 9,
+            "status": "GREEN",
+            "changed_at": "2022-05-06T15:00:00Z"
+          },
+          "street": 3,
+          "time": "2022-05-06T15:00:00Z"
+        }
+      ]
+    }
+  },
+  {
+    "httpRequest": {
+      "path": "/reporting/v3/conversion-details/4",
+      "method" : "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": [
+        {
+          "conversionDetails": {
+            "traffic_light": 11,
+            "status": "GREEN",
+            "changed_at": "2022-05-06T15:00:00Z"
+          },
+          "street": 4,
+          "time": "2022-05-06T15:00:00Z"
+        }
+      ]
+    }
+  }
+]
