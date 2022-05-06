@@ -1,6 +1,6 @@
 # TrafficLight 🚦
 
-Personal challenge to implement *Fs2* & *Akka Strams*.
+Personal challenge to implement *Fs2* & *Akka Streams*.
 
 ## Functional Requirements
 
