@@ -1,4 +1,5 @@
 package domain.behavior
+import fs2.Stream
 
 /**
  * Interface responsible for consuming status updates in kafka.
@@ -6,5 +7,5 @@ package domain.behavior
  * @tparam F Effect
  */
 trait Consumer[F[_]] {
-  def produce(): F[Unit]
+  def consume[A](): Stream[F, A]
 }

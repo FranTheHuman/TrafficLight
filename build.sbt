@@ -10,7 +10,10 @@ lazy val trafficLightsFs2 = (project in file("traffic-lights-fs2"))
     libraryDependencies ++= Seq(
       fs2,
       catsEffectTestingSpecs2 % Test,
-      scalatest % Test
+      scalatest % Test,
+      http4sDsl,
+      http4sClient,
+      log4cats
     )
   )
 

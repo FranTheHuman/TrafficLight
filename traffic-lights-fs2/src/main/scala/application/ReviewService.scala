@@ -1,11 +1,34 @@
 package application
 
-import cats.effect.Sync
-import domain.behavior.Reviewer
-import domain.models.{Street, TrafficLights}
+import cats.effect.{Async, IO, Sync}
+import cats.syntax.all.*
+import cats.{Applicative, Functor, Monad}
+import domain.behavior.{Finder, Reviewer}
+import domain.models.*
+import fs2.Stream
+import org.typelevel.log4cats.Logger
+import cats.implicits.*
 
-class ReviewService[F[_]: Sync] extends Reviewer[F] {
+import scala.concurrent.ExecutionContext
 
-  override def reviewTrafficLights(streets: List[Street]): F[List[TrafficLights]] = ???
+class ReviewService[F[_]: Monad: Logger](
+   finder: Finder[F]
+  ) extends Reviewer[F] {
+
+  override def reviewTrafficLights(): Stream[F, TrafficLights] =
+    Stream
+      .evalSeq(reviewFlow)
+
+  lazy val reviewFlow: F[List[TrafficLights]] =
+    for {
+      _             <- Logger[F].info("Finding Streets with Yellow Traffic Lights")
+      streets       <- finder.findStreetsWithYellowTL()
+      _             <- Logger[F].info("Finding Yellow Traffic Changes")
+      tlChanged     <- streets.map(finder.findTrafficLightsChanges).sequence
+      trafficLights = mergeTrafficLights(tlChanged)
+    } yield trafficLights
+
+  def mergeTrafficLights(ll: List[List[TrafficLights]]): List[TrafficLights] =
+    ll.foldLeft(List.empty[TrafficLights])((acc, tls) => acc ::: tls)
 
 }
