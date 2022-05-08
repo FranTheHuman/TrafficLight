@@ -3,11 +3,12 @@ package application
 import cats.effect.{Async, IO, Sync}
 import cats.syntax.all.*
 import cats.{Applicative, Functor, Monad}
-import domain.behavior.{Finder, Reviewer}
+import domain.behavior.Reviewer
 import domain.models.*
 import fs2.Stream
 import org.typelevel.log4cats.Logger
 import cats.implicits.*
+import infrastructure.Finder
 
 import scala.concurrent.ExecutionContext
 
@@ -29,6 +30,6 @@ class ReviewService[F[_]: Monad: Logger](
     } yield trafficLights
 
   def mergeTrafficLights(ll: List[List[TrafficLights]]): List[TrafficLights] =
-    ll.foldLeft(List.empty[TrafficLights])((acc, tls) => acc ::: tls)
+    ll.fold(List.empty[TrafficLights])(_ ::: _)
 
 }

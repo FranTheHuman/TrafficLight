@@ -4,8 +4,8 @@ sealed trait Colour
 
 object Colour {
 
-  final case object GREEN  extends Colour
-  final case object RED    extends Colour
-  final case object YELLOW extends Colour
+  case object GREEN  extends Colour
+  case object RED    extends Colour
+  case object YELLOW extends Colour
 
 }
