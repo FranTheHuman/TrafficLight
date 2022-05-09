@@ -15,7 +15,7 @@ lazy val trafficLightsFs2 = (project in file("traffic-lights-fs2"))
       http4sClient,
       doobieCore,
       doobieHickari,
-      mysqlDriver,
+      postgresDriver,
       log4cats
     )
   )

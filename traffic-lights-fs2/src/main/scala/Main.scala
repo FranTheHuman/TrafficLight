@@ -19,8 +19,8 @@ object Main extends IOApp.Simple {
         for {
           ce <- ExecutionContexts.fixedThreadPool[F](32) // our connect EC
           xa <- HikariTransactor.newHikariTransactor[F](
-            "com.mysql.cj.jdbc.Driver", // driver classname
-            "jdbc:mysql://localhost:3307/street", // connect URL
+            "org.postgresql.Driver", // driver classname
+            "jdbc:postgresql://127.0.0.1:5432/streets", // connect URL
             "root", // username
             "root", // password
             ce // await connection here

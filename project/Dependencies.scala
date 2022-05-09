@@ -10,7 +10,6 @@ object Dependencies {
     val log4cats  = "2.3.0"
     val http4s    = "0.23.11"
     val doobie    = "1.0.0-RC1"
-    val mysql     = "8.0.22"
   }
 
   val fs2                     = "co.fs2"            %% "fs2-core"                   % V.fs2
@@ -23,5 +22,5 @@ object Dependencies {
   val http4sClient            = "org.http4s"        %% "http4s-blaze-client"        % V.http4s
   val doobieCore              = "org.tpolecat"      %% "doobie-core"                % V.doobie
   val doobieHickari           = "org.tpolecat"      %% "doobie-hikari"              % V.doobie
-  val mysqlDriver             = "mysql"              % "mysql-connector-java"       % V.mysql
+  val postgresDriver          = "org.tpolecat"      %% "doobie-postgres"            % V.doobie
 }
