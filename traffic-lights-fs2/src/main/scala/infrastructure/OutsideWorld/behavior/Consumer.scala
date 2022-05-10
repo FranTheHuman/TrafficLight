@@ -1,4 +1,4 @@
-package infrastructure
+package infrastructure.OutsideWorld.behavior
 
 import fs2.Stream
 

@@ -1,6 +1,22 @@
 [
   {
     "httpRequest": {
+      "path": "/reporting/v3/conversion-details/1",
+      "method" : "GET",
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": "application/json"
+      },
+      "body": []
+    }
+  },
+  {
+    "httpRequest": {
       "path": "/reporting/v3/conversion-details/2",
       "method" : "GET",
       "headers": {

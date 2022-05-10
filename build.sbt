@@ -13,10 +13,14 @@ lazy val trafficLightsFs2 = (project in file("traffic-lights-fs2"))
       scalatest % Test,
       http4sDsl,
       http4sClient,
+      http4sCirce,
+      circeFs2,
       doobieCore,
       doobieHickari,
       postgresDriver,
-      log4cats
+      log4catsCore,
+      log4cats,
+      logbackClassic % Runtime
     )
   )
 
