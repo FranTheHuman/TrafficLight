@@ -41,7 +41,7 @@ object Main extends IOApp.Simple {
   )
 
   val httpConfig: HttpClientConfiguration = HttpClientConfiguration(
-    "http://localhost:1080/reporting/v3/conversion-details/1"
+    "http://localhost:1080/reporting/v3/conversion-details/"
   )
 
   override def run: IO[Unit] =

@@ -3,7 +3,7 @@ package infrastructure.OutsideWorld
 import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.implicits.*
-import cats.{Applicative, Functor, Monad}
+import cats.{Applicative, Functor, Monad, Monoid}
 import domain.models.{Street, TrafficLights}
 import doobie.*
 import doobie.hikari.*
@@ -19,7 +19,7 @@ import org.http4s.Method.*
 import org.http4s.blaze.client.BlazeClientBuilder
 import org.http4s.client.Client
 import org.http4s.syntax.literals.uri
-import org.http4s.{EntityDecoder, Header, Headers, HttpVersion, Request, Response}
+import org.http4s.{EntityDecoder, Header, Headers, HttpVersion, Request, Response, Uri}
 import org.typelevel.ci.CIString
 import org.typelevel.log4cats.Logger
 
@@ -46,35 +46,53 @@ class RepositoryImpl[F[_]: Async](
     ExecutionContext.global // await connection here
   )
 
-  override def findReportChanges: Pipe[F, Street, TrafficLights] = ???
-    // Stream
-    //   .eval(
-    //     BlazeClientBuilder[F]
-    //       .resource
-    //       .use(_.expect[ReportResponse](createRequest(street.id)))
-    //   )
-      // TODO: CONVERT TO TrafficLights
+  override def findReportChanges: Pipe[F, Street, TrafficLights] =
+    streetS =>
+      streetS
+        .evalMap(s => query(s.id))
+        .flatMap(reportResponse =>
+          Stream
+            .evalSeq(
+              Applicative[F]
+                .pure(
+                  reportResponse
+                    .conversionDetails
+                    .map(cd =>
+                      TrafficLights(
+                        cd.traffic_light,
+                        cd.status,
+                        Some(cd.changed_at),
+                        reportResponse.street)
+                    )
+                )
+              )
+        )
+
+  lazy val query: Int => F[ReportResponse] =
+    id =>
+      BlazeClientBuilder[F]
+        .resource
+        .use(_.expect[ReportResponse](createRequest(id)))
 
   lazy val createRequest: Int => Request[F] =
       streetId =>
         Request[F](
           GET,
-          uri"${httpConfig.url}" / streetId,
+          uri"" / httpConfig.url / streetId,
           HttpVersion.`HTTP/2.0`,
           Headers(List(Header.Raw(CIString("Content-Type"), "application/json")))
         )
 
   override def findStreetsWithYellowTL(): Stream[F, Street] =
     Stream
-       .eval(
-         transactor
-           .use(
-             sql"Select * from street"
-               .query[Street]
-               .to[List]
-               .transact[F]
-           )
-       )
-       // TODO Transform Stream[F, List[Street] -> Stream[F, Street]
+      .evalSeq(
+        transactor
+        .use(
+          sql"Select * from street"
+            .query[Street]
+            .to[List]
+            .transact[F]
+        )
+      )
 
 }

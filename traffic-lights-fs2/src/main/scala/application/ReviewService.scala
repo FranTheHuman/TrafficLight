@@ -12,12 +12,20 @@ import infrastructure.OutsideWorld.behavior.Repository
 
 import scala.concurrent.ExecutionContext
 
-class ReviewService[F[_]: Monad: Applicative: Functor: Logger](
+class ReviewService[F[_]: Monad: Applicative: Functor](
    finder: Repository[F]
-  ) extends Reviewer[F] {
+  )(implicit logger: Logger[F]) extends Reviewer[F] {
 
   override def reviewTrafficLights(): Stream[F, TrafficLights] =
     finder
       .findStreetsWithYellowTL()
+      .map { street =>
+        logger.info(s"$street")
+        street
+      }
       .through(finder.findReportChanges)
+      .map { trafficLights =>
+        logger.info(s"$trafficLights - Changed")
+        trafficLights
+      }
 }
