@@ -1,3 +1,5 @@
 package infrastructure.models.configurations
 
-case class HttpClientConfiguration(url: String)
+import org.http4s.Uri
+
+case class HttpClientConfiguration(url: Uri)

@@ -12,7 +12,11 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": []
+      "body": {
+        "conversionDetails": [],
+        "street": 1,
+        "time": "2022-05-06T15:00:00Z"
+      }
     }
   },
   {
@@ -28,26 +32,22 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": [
-        {
-          "conversionDetails": {
-            "traffic_light": 5,
-            "status": "RED",
-            "changed_at": "2022-05-06T15:00:00Z"
-          },
+      "body": {
+          "conversionDetails": [
+            {
+              "traffic_light": 5,
+              "status": "RED",
+              "changed_at": "2022-05-06T15:00:00Z"
+            },
+            {
+              "traffic_light": 6,
+              "status": "GREEN",
+              "changed_at": "2022-05-06T15:00:00Z"
+            }
+          ],
           "street": 2,
           "time": "2022-05-06T15:00:00Z"
-        },
-        {
-          "conversionDetails": {
-            "traffic_light": 6,
-            "status": "GREEN",
-            "changed_at": "2022-05-06T15:00:00Z"
-          },
-          "street": 2,
-          "time": "2022-05-06T15:00:00Z"
-        }
-      ]
+      }
     }
   },
   {
@@ -63,26 +63,22 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": [
-        {
-          "conversionDetails": {
+      "body": {
+        "conversionDetails": [
+          {
             "traffic_light": 8,
             "status": "RED",
             "changed_at": "2022-05-06T15:00:00Z"
           },
-          "street": 3,
-          "time": "2022-05-06T15:00:00Z"
-        },
-        {
-          "conversionDetails": {
+          {
             "traffic_light": 9,
             "status": "GREEN",
             "changed_at": "2022-05-06T15:00:00Z"
-          },
-          "street": 3,
-          "time": "2022-05-06T15:00:00Z"
-        }
-      ]
+          }
+        ],
+        "street": 3,
+        "time": "2022-05-06T15:00:00Z"
+      }
     }
   },
   {
@@ -98,17 +94,17 @@
       "headers": {
         "Content-Type": "application/json"
       },
-      "body": [
-        {
-          "conversionDetails": {
+      "body": {
+        "conversionDetails": [
+          {
             "traffic_light": 11,
             "status": "GREEN",
             "changed_at": "2022-05-06T15:00:00Z"
-          },
-          "street": 4,
-          "time": "2022-05-06T15:00:00Z"
-        }
-      ]
+          }
+        ],
+        "street": 4,
+        "time": "2022-05-06T15:00:00Z"
+      }
     }
   }
 ]

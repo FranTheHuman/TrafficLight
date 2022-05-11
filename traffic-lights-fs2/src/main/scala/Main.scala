@@ -1,6 +1,6 @@
 import application.ReviewService
 import cats.effect.kernel.Resource
-import cats.effect.{Async, IO, IOApp}
+import cats.effect.{Async, IO, IOApp, Sync}
 import domain.models.TrafficLights
 import domain.models.TrafficLights.*
 import doobie.*
@@ -13,6 +13,8 @@ import org.http4s.circe.jsonOf
 import org.http4s.client.Client
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
+import fs2.Stream
+import org.http4s.syntax.literals.uri
 
 object Main extends IOApp.Simple {
 
@@ -29,6 +31,8 @@ object Main extends IOApp.Simple {
 
     reviewer
       .reviewTrafficLights()
+      .handleErrorWith(error => Stream.eval(Sync[F].pure(println(error))))
+      .evalMap(result => Sync[F].pure(println(result)))
       .compile
       .drain
   }
@@ -41,7 +45,7 @@ object Main extends IOApp.Simple {
   )
 
   val httpConfig: HttpClientConfiguration = HttpClientConfiguration(
-    "http://localhost:1080/reporting/v3/conversion-details/"
+    uri"http://localhost:1080/reporting/v3/conversion-details/"
   )
 
   override def run: IO[Unit] =

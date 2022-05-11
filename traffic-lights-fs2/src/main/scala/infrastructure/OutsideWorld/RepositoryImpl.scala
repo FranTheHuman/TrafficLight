@@ -1,5 +1,6 @@
 package infrastructure.OutsideWorld
 
+import application.Globals.*
 import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.implicits.*
@@ -47,38 +48,24 @@ class RepositoryImpl[F[_]: Async](
   )
 
   override def findReportChanges: Pipe[F, Street, TrafficLights] =
-    streetS =>
+    (streetS: Stream[F, Street]) =>
       streetS
         .evalMap(s => query(s.id))
-        .flatMap(reportResponse =>
-          Stream
-            .evalSeq(
-              Applicative[F]
-                .pure(
-                  reportResponse
-                    .conversionDetails
-                    .map(cd =>
-                      TrafficLights(
-                        cd.traffic_light,
-                        cd.status,
-                        Some(cd.changed_at),
-                        reportResponse.street)
-                    )
-                )
-              )
-        )
+        .map(_.toTrafficLights)
+        .removeList()
+      
 
-  lazy val query: Int => F[ReportResponse] =
+  private lazy val query: Int => F[ReportResponse] =
     id =>
       BlazeClientBuilder[F]
         .resource
         .use(_.expect[ReportResponse](createRequest(id)))
 
-  lazy val createRequest: Int => Request[F] =
+  private lazy val createRequest: Int => Request[F] =
       streetId =>
         Request[F](
           GET,
-          uri"" / httpConfig.url / streetId,
+          httpConfig.url / streetId,
           HttpVersion.`HTTP/2.0`,
           Headers(List(Header.Raw(CIString("Content-Type"), "application/json")))
         )

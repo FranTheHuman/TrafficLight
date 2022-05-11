@@ -1,6 +1,7 @@
 package infrastructure.models.responses
 
 import cats.effect.Async
+import domain.models.TrafficLights
 import io.circe.{Decoder, HCursor}
 import org.http4s.EntityDecoder
 import org.http4s.circe.jsonOf
@@ -26,6 +27,13 @@ object ReportResponse {
 
   implicit def reportResponseDecoder[F[_]: Async]: EntityDecoder[F, ReportResponse] =
     jsonOf[F, ReportResponse]
+
+  extension(rr: ReportResponse) {
+    def toTrafficLights: List[TrafficLights] =
+      rr
+        .conversionDetails
+        .map(cd => TrafficLights(cd.traffic_light, cd.status, Some(cd.changed_at), rr.street))
+  }
 
 }
 

@@ -19,13 +19,5 @@ class ReviewService[F[_]: Monad: Applicative: Functor](
   override def reviewTrafficLights(): Stream[F, TrafficLights] =
     finder
       .findStreetsWithYellowTL()
-      .map { street =>
-        logger.info(s"$street")
-        street
-      }
       .through(finder.findReportChanges)
-      .map { trafficLights =>
-        logger.info(s"$trafficLights - Changed")
-        trafficLights
-      }
 }
