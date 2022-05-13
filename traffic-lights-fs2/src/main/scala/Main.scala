@@ -18,8 +18,8 @@ import org.http4s.syntax.literals.uri
 
 object Main extends IOApp.Simple {
 
-  private def executeReview[F[_]: Async](
-    dbConfig: DbConfiguration,
+  private def createReviewer[F[_]: Async](
+    implicit dbConfig: DbConfiguration,
     httpConfig: HttpClientConfiguration
   ) = {
 
@@ -28,29 +28,28 @@ object Main extends IOApp.Simple {
 
     val repository = new RepositoryImpl[F](dbConfig, httpConfig)
     val reviewer   = new ReviewService[F](repository)
-    val producer   = new ProducerImpl[F]()
 
     reviewer
-      .reviewTrafficLights()
-      .evalMap(result => Sync[F].pure(println(result)))
-      .flatMap(_ => producer.produce())
-      .handleErrorWith(error => Stream.eval(Sync[F].pure(println(error))))
-      .compile
-      .drain
   }
 
-  val dbConfig: DbConfiguration = DbConfiguration(
+  implicit val dbConfig: DbConfiguration = DbConfiguration(
     "org.postgresql.Driver",
     "jdbc:postgresql://127.0.0.1:5432/streets",
     "root",
     "root",
   )
 
-  val httpConfig: HttpClientConfiguration = HttpClientConfiguration(
+  implicit val httpConfig: HttpClientConfiguration = HttpClientConfiguration(
     uri"http://localhost:1080/reporting/v3/conversion-details/"
   )
 
   override def run: IO[Unit] =
-    executeReview[IO](dbConfig, httpConfig)
+    createReviewer[IO]
+      .reviewTrafficLights()
+      .evalMap(IO.println)
+      .flatMap(_ => new ProducerImpl[IO]().produce())
+      .handleErrorWith(error => Stream.eval(IO(println(error))))
+      .compile
+      .drain
 
 }
