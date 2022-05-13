@@ -5,7 +5,7 @@ import domain.models.TrafficLights
 import domain.models.TrafficLights.*
 import doobie.*
 import doobie.hikari.*
-import infrastructure.OutsideWorld.RepositoryImpl
+import infrastructure.OutsideWorld.{ProducerImpl, RepositoryImpl}
 import infrastructure.models.configurations.{DbConfiguration, HttpClientConfiguration}
 import org.http4s.EntityDecoder
 import org.http4s.blaze.client.*
@@ -26,13 +26,15 @@ object Main extends IOApp.Simple {
     implicit val logger: Logger[F] =
       Slf4jLogger.getLogger[F]
 
-    val finder    = new RepositoryImpl[F](dbConfig, httpConfig)
-    val reviewer  = new ReviewService[F](finder)
+    val repository = new RepositoryImpl[F](dbConfig, httpConfig)
+    val reviewer   = new ReviewService[F](repository)
+    val producer   = new ProducerImpl[F]()
 
     reviewer
       .reviewTrafficLights()
-      .handleErrorWith(error => Stream.eval(Sync[F].pure(println(error))))
       .evalMap(result => Sync[F].pure(println(result)))
+      .flatMap(_ => producer.produce())
+      .handleErrorWith(error => Stream.eval(Sync[F].pure(println(error))))
       .compile
       .drain
   }

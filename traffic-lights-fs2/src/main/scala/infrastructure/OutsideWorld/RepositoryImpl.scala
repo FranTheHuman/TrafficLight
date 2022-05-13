@@ -34,7 +34,7 @@ import scala.concurrent.ExecutionContext
  * @tparam F
  *   Effect
  */
-class RepositoryImpl[F[_]: Async](
+class RepositoryImpl[F[_]: Async: Applicative](
   dbConfig: DbConfiguration,
   httpConfig: HttpClientConfiguration
  )(implicit M: MonadCancel[F, Throwable]) extends Repository[F] {
@@ -50,10 +50,12 @@ class RepositoryImpl[F[_]: Async](
   override def findReportChanges: Pipe[F, Street, TrafficLights] =
     (streetS: Stream[F, Street]) =>
       streetS
-        .evalMap(s => query(s.id))
-        .map(_.toTrafficLights)
-        .removeList()
-      
+        .evalMap(s  => query(s.id))
+        .flatMap(rr =>
+          Stream
+            .emits(rr.toTrafficLights)
+            .covary[F]
+        )
 
   private lazy val query: Int => F[ReportResponse] =
     id =>

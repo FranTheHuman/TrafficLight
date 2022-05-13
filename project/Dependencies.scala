@@ -13,6 +13,7 @@ object Dependencies {
     val doobie    = "1.0.0-RC1"
     val circe     = "0.14.0"
     val circe_2   = "0.15.0-M1"
+    val kafkaFs2  = "2.5.0-M3"
   }
 
   val fs2                     = "co.fs2"            %% "fs2-core"                   % V.fs2
@@ -33,4 +34,5 @@ object Dependencies {
   val circeGeneric            = "io.circe"          %% "circe-generic"              % V.circe
   val circeLiteral            = "io.circe"          %% "circe-literal"              % V.circe_2
   val circeFs2                = "io.circe"          %% "circe-fs2"                  % V.circe
+  val kafkaFs2                = "com.github.fd4s"   %% "fs2-kafka"                  % V.kafkaFs2
 }
