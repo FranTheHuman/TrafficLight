@@ -1,6 +1,5 @@
-package infrastructure.OutsideWorld
+package infrastructure.repository
 
-import application.Globals.*
 import cats.effect.*
 import cats.effect.kernel.Resource
 import cats.implicits.*
@@ -11,9 +10,10 @@ import doobie.hikari.*
 import doobie.implicits.*
 import doobie.util.transactor.Transactor
 import fs2.{Chunk, Pipe, Stream}
-import infrastructure.OutsideWorld.behavior.Repository
-import infrastructure.models.configurations.{DbConfiguration, HttpClientConfiguration}
+import infrastructure.adapter.http.HttpClientConfig
+import infrastructure.models.configurations.DbConfiguration
 import infrastructure.models.responses.ReportResponse
+import infrastructure.repository.Repository
 import io.circe.fs2.byteParser
 import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.Method.*
@@ -35,8 +35,7 @@ import scala.concurrent.ExecutionContext
  *   Effect
  */
 class RepositoryImpl[F[_]: Async: Applicative](
-  dbConfig: DbConfiguration,
-  httpConfig: HttpClientConfiguration
+  dbConfig: DbConfiguration
  )(implicit M: MonadCancel[F, Throwable]) extends Repository[F] {
 
   private val transactor: Resource[F, HikariTransactor[F]] = HikariTransactor.newHikariTransactor[F](
@@ -46,31 +45,6 @@ class RepositoryImpl[F[_]: Async: Applicative](
     dbConfig.pass,
     ExecutionContext.global // await connection here
   )
-
-  override def findReportChanges: Pipe[F, Street, TrafficLights] =
-    (streetS: Stream[F, Street]) =>
-      streetS
-        .evalMap(s  => query(s.id))
-        .flatMap(rr =>
-          Stream
-            .emits(rr.toTrafficLights)
-            .covary[F]
-        )
-
-  private lazy val query: Int => F[ReportResponse] =
-    id =>
-      BlazeClientBuilder[F]
-        .resource
-        .use(_.expect[ReportResponse](createRequest(id)))
-
-  private lazy val createRequest: Int => Request[F] =
-      streetId =>
-        Request[F](
-          GET,
-          httpConfig.url / streetId,
-          HttpVersion.`HTTP/2.0`,
-          Headers(List(Header.Raw(CIString("Content-Type"), "application/json")))
-        )
 
   override def findStreetsWithYellowTL(): Stream[F, Street] =
     Stream

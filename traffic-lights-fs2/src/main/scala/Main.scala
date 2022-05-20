@@ -1,35 +1,42 @@
 import application.ReviewService
+import cats.effect.IO.asyncForIO
 import cats.effect.kernel.Resource
 import cats.effect.{Async, IO, IOApp, Sync}
 import domain.models.TrafficLights
 import domain.models.TrafficLights.*
 import doobie.*
 import doobie.hikari.*
-import infrastructure.OutsideWorld.{ProducerImpl, RepositoryImpl}
-import infrastructure.models.configurations.{DbConfiguration, HttpClientConfiguration}
+import fs2.Stream
+import fs2.kafka.ProducerResult
+import infrastructure.adapter.kafka.Producer
+import infrastructure.adapter.http.{HttpClient, HttpClientConfig}
+import infrastructure.adapter.kafka.models.{Message, ProducerConfig}
+import infrastructure.models.configurations.DbConfiguration
+import infrastructure.repository.RepositoryImpl
 import org.http4s.EntityDecoder
 import org.http4s.blaze.client.*
 import org.http4s.circe.jsonOf
 import org.http4s.client.Client
+import org.http4s.syntax.literals.uri
 import org.typelevel.log4cats.Logger
 import org.typelevel.log4cats.slf4j.Slf4jLogger
-import fs2.Stream
-import org.http4s.syntax.literals.uri
 
 object Main extends IOApp.Simple {
 
-  private def createReviewer[F[_]: Async](
-    implicit dbConfig: DbConfiguration,
-    httpConfig: HttpClientConfiguration
-  ) = {
+  def createReviewer[F[_]: Async](
+    dbConfig: DbConfiguration,
+    httpConfig: HttpClientConfig
+  ): ReviewService[F] = {
 
     implicit val logger: Logger[F] =
       Slf4jLogger.getLogger[F]
 
-    val repository = new RepositoryImpl[F](dbConfig, httpConfig)
-    val reviewer   = new ReviewService[F](repository)
+    ReviewService[F](new RepositoryImpl[F](dbConfig), new HttpClient[F](httpConfig))
+  }
 
-    reviewer
+  def produceTl[F[_]: Async](tl: TrafficLights)(implicit producerConfig: ProducerConfig): Stream[F, ProducerResult[Unit, String, TrafficLights]] = {
+    import TrafficLights.{showTl, trafficLightsSerializer}
+    new Producer[F](producerConfig).produceOne(Message("", "", tl))
   }
 
   implicit val dbConfig: DbConfiguration = DbConfiguration(
@@ -39,15 +46,18 @@ object Main extends IOApp.Simple {
     "root",
   )
 
-  implicit val httpConfig: HttpClientConfiguration = HttpClientConfiguration(
-    uri"http://localhost:1080/reporting/v3/conversion-details/"
+  implicit val httpConfig: HttpClientConfig = HttpClientConfig(
+    "http://localhost:1080/reporting/v3/conversion-details"
+  )
+
+  implicit val producerConfig: ProducerConfig = ProducerConfig(
+    "localhost:9092"
   )
 
   override def run: IO[Unit] =
-    createReviewer[IO]
+    createReviewer[IO](dbConfig, httpConfig)
       .reviewTrafficLights()
-      .evalMap(IO.println)
-      .flatMap(_ => new ProducerImpl[IO]().produce())
+      .flatMap(produceTl)
       .handleErrorWith(error => Stream.eval(IO(println(error))))
       .compile
       .drain

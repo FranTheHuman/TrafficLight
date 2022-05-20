@@ -25,7 +25,7 @@ object ReportResponse {
       }
   }
 
-  implicit def reportResponseDecoder[F[_]: Async]: EntityDecoder[F, ReportResponse] =
+  implicit def reportResponseEntityDecoder[F[_]: Async]: EntityDecoder[F, ReportResponse] =
     jsonOf[F, ReportResponse]
 
   extension(rr: ReportResponse) {

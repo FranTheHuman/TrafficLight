@@ -1,4 +1,4 @@
-package infrastructure.OutsideWorld.behavior
+package infrastructure.adapter.kafka
 
 import fs2.Stream
 

@@ -1,6 +1,8 @@
 package domain.models
 
+import cats.Show
 import cats.effect.Async
+import fs2.kafka.Serializer
 import io.circe.{Decoder, HCursor}
 import org.http4s.{EntityDecoder, FormDataDecoder}
 import org.http4s.FormDataDecoder.field
@@ -33,4 +35,9 @@ object TrafficLights {
   implicit def seqTrafficLightsDecoder[F[_]: Async]: EntityDecoder[F, List[TrafficLights]] =
     jsonOf[F, List[TrafficLights]]
 
+  implicit def trafficLightsSerializer[F[_]: Async]: Serializer[F, TrafficLights] =
+    Serializer.lift[F, TrafficLights](s => Async[F].pure(s.toString.getBytes("UTF-8")))
+
+  implicit val showTl: Show[TrafficLights] = Show.fromToString
+  
 }
