@@ -8,11 +8,11 @@ import doobie.*
 import doobie.hikari.*
 import fs2.Stream
 import fs2.kafka.ProducerResult
-import infrastructure.adapter.kafka.Producer
 import infrastructure.adapter.http.{HttpClient, HttpClientConfig}
+import infrastructure.adapter.kafka.Producer
 import infrastructure.adapter.kafka.models.{Message, ProducerConfig}
+import infrastructure.adapter.sql.Repository
 import infrastructure.models.configurations.DbConfiguration
-import infrastructure.repository.RepositoryImpl
 import org.http4s.EntityDecoder
 import org.http4s.blaze.client.*
 import org.http4s.circe.jsonOf
@@ -31,12 +31,12 @@ object Main extends IOApp.Simple {
     implicit val logger: Logger[F] =
       Slf4jLogger.getLogger[F]
 
-    ReviewService[F](new RepositoryImpl[F](dbConfig), new HttpClient[F](httpConfig))
+    ReviewService[F](new Repository[F](dbConfig), new HttpClient[F](httpConfig))
   }
 
   def produceTl[F[_]: Async](tl: TrafficLights)(implicit producerConfig: ProducerConfig): Stream[F, ProducerResult[Unit, String, TrafficLights]] = {
     import TrafficLights.{showTl, trafficLightsSerializer}
-    new Producer[F](producerConfig).produceOne(Message("", "", tl))
+    new Producer[F](producerConfig).produceOne(Message("news", "traffic-light", tl)) // TODO: Not create producer here
   }
 
   implicit val dbConfig: DbConfiguration = DbConfiguration(
@@ -47,7 +47,9 @@ object Main extends IOApp.Simple {
   )
 
   implicit val httpConfig: HttpClientConfig = HttpClientConfig(
-    "http://localhost:1080/reporting/v3/conversion-details"
+    "localhost",
+    Some(1080),
+    "reporting/v3/conversion-details"
   )
 
   implicit val producerConfig: ProducerConfig = ProducerConfig(

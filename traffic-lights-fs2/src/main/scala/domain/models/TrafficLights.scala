@@ -4,9 +4,9 @@ import cats.Show
 import cats.effect.Async
 import fs2.kafka.Serializer
 import io.circe.{Decoder, HCursor}
-import org.http4s.{EntityDecoder, FormDataDecoder}
 import org.http4s.FormDataDecoder.field
 import org.http4s.circe.jsonOf
+import org.http4s.{EntityDecoder, FormDataDecoder}
 
 case class TrafficLights(
   id: Int,

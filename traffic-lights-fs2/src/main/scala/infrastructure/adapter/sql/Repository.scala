@@ -1,4 +1,4 @@
-package infrastructure.repository
+package infrastructure.adapter.sql
 
 import cats.effect.*
 import cats.effect.kernel.Resource
@@ -11,9 +11,9 @@ import doobie.implicits.*
 import doobie.util.transactor.Transactor
 import fs2.{Chunk, Pipe, Stream}
 import infrastructure.adapter.http.HttpClientConfig
+import infrastructure.adapter.sql.SqlAdapter
 import infrastructure.models.configurations.DbConfiguration
 import infrastructure.models.responses.ReportResponse
-import infrastructure.repository.Repository
 import io.circe.fs2.byteParser
 import org.http4s.FormDataDecoder.formEntityDecoder
 import org.http4s.Method.*
@@ -28,15 +28,14 @@ import scala.concurrent.ExecutionContext
 
 /**
  * Service in charge of searching for data in the outside world
- * @param transactor Resource for database connection
- * @param httpClient Resource for http requests
+ * @param dbConfig asd
  * @param M MonadCancel for Resource execution
  * @tparam F
  *   Effect
  */
-class RepositoryImpl[F[_]: Async: Applicative](
+class Repository[F[_]: Async: Applicative](
   dbConfig: DbConfiguration
- )(implicit M: MonadCancel[F, Throwable]) extends Repository[F] {
+ )(implicit M: MonadCancel[F, Throwable]) extends SqlAdapter[F] {
 
   private val transactor: Resource[F, HikariTransactor[F]] = HikariTransactor.newHikariTransactor[F](
     dbConfig.driver,
@@ -46,13 +45,13 @@ class RepositoryImpl[F[_]: Async: Applicative](
     ExecutionContext.global // await connection here
   )
 
-  override def findStreetsWithYellowTL(): Stream[F, Street] =
+  override def executeQuery[T](query: String)(implicit r: Read[T]): Stream[F, T] =
     Stream
       .evalSeq(
         transactor
         .use(
-          sql"Select * from street"
-            .query[Street]
+          sql"select * from street;"
+            .query[T]
             .to[List]
             .transact[F]
         )

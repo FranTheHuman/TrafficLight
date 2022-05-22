@@ -31,6 +31,11 @@ A consumer runs in parallel to grab the change and update the state of the semap
     │   ├── TrafficLight-akkaStream
     │   │   └── src
     │   │   │   ├── main
+    │   │   │   │   └── scala
+    │   │   │   │   │   ├── application
+    │   │   │   │   │   ├── domain
+    │   │   │   │   │   ├── infrastructure
+    │   │   │   │   │   └── Main.scala
     │   │   │   └── test
     └── README.md
 
@@ -38,4 +43,15 @@ A consumer runs in parallel to grab the change and update the state of the semap
 
 **1- Set environment**:
 
-    docker-compose -f ./infrastructure/docker-compose.traffic_light.yml down --remove-orphans && docker-compose -f ./infrastructure/docker-compose.traffic_light.yml up -d
+    docker-compose -f ./infrastructure/docker-compose.traffic_light.yml down --remove-orphans &&
+    docker-compose -f ./infrastructure/docker-compose.traffic_light.yml up -d
+
+**2- Start Consumer**:
+
+    sbt ...
+
+**3- Run Review Process with Fs2**:
+
+    sbt trafficLightsFs2/run
+
+**4- Run Review Process with Akka Stream**:
