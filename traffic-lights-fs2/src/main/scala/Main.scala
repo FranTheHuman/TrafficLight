@@ -1,4 +1,5 @@
 import application.ReviewService
+import cats.Show
 import cats.effect.IO.asyncForIO
 import cats.effect.kernel.Resource
 import cats.effect.{Async, IO, IOApp, Sync}
@@ -7,7 +8,8 @@ import domain.models.TrafficLights.*
 import doobie.*
 import doobie.hikari.*
 import fs2.Stream
-import fs2.kafka.ProducerResult
+import fs2.kafka.{ProducerResult, Serializer}
+import infrastructure.Configurations.*
 import infrastructure.adapter.http.{HttpClient, HttpClientConfig}
 import infrastructure.adapter.kafka.Producer
 import infrastructure.adapter.kafka.models.{Message, ProducerConfig}
@@ -31,35 +33,27 @@ object Main extends IOApp.Simple {
     implicit val logger: Logger[F] =
       Slf4jLogger.getLogger[F]
 
-    ReviewService[F](new Repository[F](dbConfig), new HttpClient[F](httpConfig))
+    ReviewService[F](
+      new Repository[F](dbConfig),
+      new HttpClient[F](httpConfig)
+    )
   }
 
-  def produceTl[F[_]: Async](tl: TrafficLights)(implicit producerConfig: ProducerConfig): Stream[F, ProducerResult[Unit, String, TrafficLights]] = {
-    import TrafficLights.{showTl, trafficLightsSerializer}
-    new Producer[F](producerConfig).produceOne(Message("news", "traffic-light", tl)) // TODO: Not create producer here
-  }
+  def produceTl[F[_]: Async](
+    tl: TrafficLights,
+    p: Producer[F]
+  )(implicit ser: Serializer[F, T], s: Show[T]): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
+    p.produceOne {
+      Message("news", "traffic-light", tl)
+    }
 
-  implicit val dbConfig: DbConfiguration = DbConfiguration(
-    "org.postgresql.Driver",
-    "jdbc:postgresql://127.0.0.1:5432/streets",
-    "root",
-    "root",
-  )
-
-  implicit val httpConfig: HttpClientConfig = HttpClientConfig(
-    "localhost",
-    Some(1080),
-    "reporting/v3/conversion-details"
-  )
-
-  implicit val producerConfig: ProducerConfig = ProducerConfig(
-    "localhost:9092"
-  )
+  import TrafficLights.{showTl, trafficLightsSerializer}
+  val producer = new Producer[IO](producerConfig)
 
   override def run: IO[Unit] =
     createReviewer[IO](dbConfig, httpConfig)
       .reviewTrafficLights()
-      .flatMap(produceTl)
+      .flatMap(produceTl(_, producer))
       .handleErrorWith(error => Stream.eval(IO(println(error))))
       .compile
       .drain
