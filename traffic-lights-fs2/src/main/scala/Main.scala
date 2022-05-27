@@ -42,7 +42,7 @@ object Main extends IOApp.Simple {
   def produceTl[F[_]: Async](
     tl: TrafficLights,
     p: Producer[F]
-  )(implicit ser: Serializer[F, T], s: Show[T]): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
+  )(implicit ser: Serializer[F, TrafficLights], s: Show[TrafficLights]): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
     p.produceOne {
       Message("news", "traffic-light", tl)
     }

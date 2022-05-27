@@ -48,8 +48,7 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 1
       KAFKA_NUM_PARTITIONS: 3
     depends_on:
-      zookeeper:
-        condition: service_started
+      - zookeeper
 
   zookeeper:
     image: wurstmeister/zookeeper

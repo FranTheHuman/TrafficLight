@@ -7,26 +7,24 @@ import cats.{Applicative, Functor, Monad}
 import domain.behavior.Reviewer
 import domain.models.*
 import fs2.{Pipe, Stream}
-import infrastructure.adapter.http.{HttpClient, HttpClientAdapter}
+import infrastructure.adapter.http.{HttpAdapter, HttpClient}
 import infrastructure.adapter.sql.{Repository, SqlAdapter}
 import infrastructure.models.responses.ReportResponse
+import infrastructure.statements.StreetStatements.*
 import org.typelevel.log4cats.Logger
 
 import scala.concurrent.ExecutionContext
 
 class ReviewService[F[_]: Async](
   repository: SqlAdapter[F],
-  http: HttpClientAdapter[F]
+  http: HttpAdapter[F]
   )(implicit logger: Logger[F]) extends Reviewer[F] {
-
-  import Street.reader
 
   override def reviewTrafficLights(): Stream[F, TrafficLights] =
     repository
-      .executeQuery[Street](query)
+      .executeQuery[Street](FIND_STREETS_WITH_YELLOWS_TL)
       .through(findReportChanges)
-
-  private lazy val query: String = "SELECT * FROM street;"
+      .handleErrorWith(_ => Stream.emits(List.empty[TrafficLights]).covary[F]) // TODO ADD LOGS
 
   private def findReportChanges: Pipe[F, Street, TrafficLights] =
     (streetS: Stream[F, Street]) =>
@@ -36,8 +34,7 @@ class ReviewService[F[_]: Async](
 
   private lazy val getChanges: Street => F[ReportResponse] =
     street =>
-      http
-        .get[ReportResponse](s"reporting/v3/conversion-details/${street.id}")
+      http.GET[ReportResponse](s"reporting/v3/conversion-details/${street.id}")
 
   private lazy val toDomain: ReportResponse => Stream[F, TrafficLights] =
     rr =>

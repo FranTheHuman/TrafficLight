@@ -1,5 +1,6 @@
 package infrastructure
 
+import infrastructure.adapter.http.HttpClientConfig
 import infrastructure.adapter.kafka.models.ProducerConfig
 import infrastructure.models.configurations.DbConfiguration
 
@@ -15,7 +16,7 @@ object Configurations {
   implicit val httpConfig: HttpClientConfig = HttpClientConfig(
     "localhost",
     Some(1080),
-    "reporting/v3/conversion-details"
+    "http"
   )
 
   implicit val producerConfig: ProducerConfig = ProducerConfig(
