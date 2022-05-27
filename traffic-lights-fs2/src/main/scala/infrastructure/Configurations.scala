@@ -15,7 +15,7 @@ object Configurations {
 
   implicit val httpConfig: HttpClientConfig = HttpClientConfig(
     "localhost",
-    Some(1080),
+    1080,
     "http"
   )
 

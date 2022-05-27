@@ -13,9 +13,20 @@
         "Content-Type": "application/json"
       },
       "body": {
-        "conversionDetails": [],
-        "street": 1,
-        "time": "2022-05-06T15:00:00Z"
+          "conversionDetails": [
+            {
+              "traffic_light": 3,
+              "status": "RED",
+              "changed_at": "2022-05-06T15:00:00Z"
+            },
+            {
+              "traffic_light": 4,
+              "status": "GREEN",
+              "changed_at": "2022-05-06T15:00:00Z"
+            }
+          ],
+          "street": 1,
+          "time": "2022-05-06T15:00:00Z"
       }
     }
   },
@@ -33,20 +44,9 @@
         "Content-Type": "application/json"
       },
       "body": {
-          "conversionDetails": [
-            {
-              "traffic_light": 5,
-              "status": "RED",
-              "changed_at": "2022-05-06T15:00:00Z"
-            },
-            {
-              "traffic_light": 6,
-              "status": "GREEN",
-              "changed_at": "2022-05-06T15:00:00Z"
-            }
-          ],
-          "street": 2,
-          "time": "2022-05-06T15:00:00Z"
+        "conversionDetails": [],
+        "street": 2,
+        "time": "2022-05-06T15:00:00Z"
       }
     }
   },
@@ -65,11 +65,6 @@
       },
       "body": {
         "conversionDetails": [
-          {
-            "traffic_light": 8,
-            "status": "RED",
-            "changed_at": "2022-05-06T15:00:00Z"
-          },
           {
             "traffic_light": 9,
             "status": "GREEN",
@@ -97,8 +92,8 @@
       "body": {
         "conversionDetails": [
           {
-            "traffic_light": 11,
-            "status": "GREEN",
+            "traffic_light": 10,
+            "status": "RED",
             "changed_at": "2022-05-06T15:00:00Z"
           }
         ],
