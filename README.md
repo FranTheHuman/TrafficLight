@@ -55,3 +55,5 @@ A consumer runs in parallel to grab the change and update the state of the semap
     sbt trafficLightsFs2/run
 
 **4- Run Review Process with Akka Stream**:
+
+    sbt trafficLightsAkkaStreams/run

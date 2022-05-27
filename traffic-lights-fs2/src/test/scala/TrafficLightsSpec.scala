@@ -1,4 +1,4 @@
-import application.ReviewService
+import application.services.ReviewService
 import cats.effect.IO
 import cats.effect.testing.specs2.CatsEffect
 import domain.models.{Street, TrafficLights}

@@ -1,4 +1,4 @@
-package application
+package application.services
 
 import cats.effect.{Async, IO, Sync}
 import cats.implicits.*
