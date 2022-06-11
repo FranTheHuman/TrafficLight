@@ -1,11 +1,13 @@
 package application.coordinators
 
 import application.coordinators.ReviewFlowCoordinator
+import application.handlers.ErrorHandler.reviewTlErrorHandler
 import application.services.ReviewService
-import cats.Show
 import cats.effect.IO.asyncForIO
 import cats.effect.kernel.Resource
 import cats.effect.{Async, IO, IOApp, Sync}
+import cats.syntax.all.*
+import cats.{Applicative, Monad, Show}
 import domain.models.TrafficLights
 import domain.models.TrafficLights.*
 import doobie.*
@@ -24,26 +26,27 @@ import org.http4s.circe.jsonOf
 import org.http4s.client.Client
 import org.http4s.syntax.literals.uri
 import org.typelevel.log4cats.Logger
-import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class ReviewFlowCoordinator[F[_]: Async] extends Coordinator[F] {
+class ReviewFlowCoordinator[F[_]: Async: Logger] extends Coordinator[F] {
 
-  implicit val logger: Logger[F] =
-    Slf4jLogger.getLogger[F]
-
-  val producer = new Producer[F](producerConfig)
+  override def coordName: String = "Review-Flow-Coordinator"
 
   override def coordinate(): F[Unit] =
-    createReviewer[F](dbConfig, httpConfig)
-      .reviewTrafficLights()
-      .flatMap(produceTl(_, producer))
-      .handleErrorWith(_ => Stream.emits(List.empty[TrafficLights]).covary[F]) // TODO ADD LOGS
+    (for {
+      _             <- sinfo(s"$coordName - Coordinating")
+      trafficLights <- createReviewer[F](dbConfig, httpConfig).reviewTrafficLights()
+      _             <- sinfo(s"$coordName - News: $trafficLights")
+      producer = new Producer[F](producerConfig)
+      producerResult <- produceTl(trafficLights, producer)
+      _              <- sinfo(s"$coordName - Published News")
+    } yield producerResult)
+      .handleErrorWith(reviewTlErrorHandler(serror))
       .compile
       .drain
 
   private def createReviewer[F[_]: Async](
-    dbConfig: DbConfiguration,
-    httpConfig: HttpClientConfig
+      dbConfig: DbConfiguration,
+      httpConfig: HttpClientConfig
   )(implicit logger: Logger[F]): ReviewService[F] =
     ReviewService[F](
       new Repository[F](dbConfig),
@@ -51,11 +54,11 @@ class ReviewFlowCoordinator[F[_]: Async] extends Coordinator[F] {
     )
 
   private def produceTl[F[_]: Async](
-    tl: TrafficLights,
-    p: Producer[F]
-  )(implicit ser: Serializer[F, TrafficLights],
-    s: Show[TrafficLights]
-  ): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
-    p.produceOne { Message("news", "traffic-light", tl) }
+      tl: TrafficLights,
+      p: Producer[F]
+  )(implicit ser: Serializer[F, TrafficLights], s: Show[TrafficLights]): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
+    p.produceOne {
+      Message("news", "traffic-light", tl)
+    }
 
 }
