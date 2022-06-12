@@ -26,39 +26,25 @@ import org.http4s.circe.jsonOf
 import org.http4s.client.Client
 import org.http4s.syntax.literals.uri
 import org.typelevel.log4cats.Logger
+import org.typelevel.log4cats.slf4j.Slf4jLogger
 
-class ReviewFlowCoordinator[F[_]: Async: Logger] extends Coordinator[F] {
+class ReviewFlowCoordinator[F[_]: Async] extends Coordinator[F] {
 
   override def coordName: String = "Review-Flow-Coordinator"
 
   override def coordinate(): F[Unit] =
     (for {
-      _             <- sinfo(s"$coordName - Coordinating")
-      trafficLights <- createReviewer[F](dbConfig, httpConfig).reviewTrafficLights()
-      _             <- sinfo(s"$coordName - News: $trafficLights")
-      producer = new Producer[F](producerConfig)
-      producerResult <- produceTl(trafficLights, producer)
+      _              <- sinfo(s"$coordName - Coordinating")
+      repository      = new Repository[F](dbConfig)
+      httpClient      = new HttpClient[F](httpConfig)
+      trafficLights  <- ReviewService[F](repository, httpClient).reviewTrafficLights()
+      _              <- sinfo(s"$coordName - News: $trafficLights")
+      producer        = new Producer[F](producerConfig)
+      producerResult <- producer.produceOne(Message("news", "traffic-light", trafficLights))
       _              <- sinfo(s"$coordName - Published News")
     } yield producerResult)
       .handleErrorWith(reviewTlErrorHandler(serror))
       .compile
       .drain
-
-  private def createReviewer[F[_]: Async](
-      dbConfig: DbConfiguration,
-      httpConfig: HttpClientConfig
-  )(implicit logger: Logger[F]): ReviewService[F] =
-    ReviewService[F](
-      new Repository[F](dbConfig),
-      new HttpClient[F](httpConfig)
-    )
-
-  private def produceTl[F[_]: Async](
-      tl: TrafficLights,
-      p: Producer[F]
-  )(implicit ser: Serializer[F, TrafficLights], s: Show[TrafficLights]): Stream[F, ProducerResult[Unit, String, TrafficLights]] =
-    p.produceOne {
-      Message("news", "traffic-light", tl)
-    }
 
 }

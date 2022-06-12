@@ -24,7 +24,6 @@ class ReviewService[F[_]: Async](
     repository
       .executeQuery[Street](FIND_STREETS_WITH_YELLOWS_TL)
       .through(findReportChanges)
-      .handleErrorWith(_ => Stream.emits(List.empty[TrafficLights]).covary[F]) // TODO ADD LOGS
 
   private def findReportChanges: Pipe[F, Street, TrafficLights] =
     (streetS: Stream[F, Street]) =>
