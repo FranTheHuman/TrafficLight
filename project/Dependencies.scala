@@ -31,7 +31,10 @@ object Dependencies {
   val doobieHickari           = "org.tpolecat"      %% "doobie-hikari"              % V.doobie
   val postgresDriver          = "org.tpolecat"      %% "doobie-postgres"            % V.doobie
   val logbackClassic          = "ch.qos.logback"     % "logback-classic"            % V.logback
+  val circeCore               = "io.circe"          %% "circe-core"                 % V.circe
   val circeGeneric            = "io.circe"          %% "circe-generic"              % V.circe
+  val circeGenericExtras      = "io.circe"          %% "circe-generic-extras"       % V.circe
+  val circeParse              = "io.circe"          %% "circe-parser"               % V.circe
   val circeLiteral            = "io.circe"          %% "circe-literal"              % V.circe_2
   val circeFs2                = "io.circe"          %% "circe-fs2"                  % V.circe
   val kafkaFs2                = "com.github.fd4s"   %% "fs2-kafka"                  % V.kafkaFs2

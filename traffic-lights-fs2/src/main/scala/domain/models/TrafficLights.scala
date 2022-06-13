@@ -3,20 +3,26 @@ package domain.models
 import cats.Show
 import cats.effect.Async
 import fs2.kafka.Serializer
-import io.circe.{Decoder, HCursor}
+import io.circe.generic.semiauto.*
+import io.circe.*
 import org.http4s.FormDataDecoder.field
 import org.http4s.circe.jsonOf
 import org.http4s.{EntityDecoder, FormDataDecoder}
+import io.circe.syntax._
 
 case class TrafficLights(
   id: Int,
   status: String,
-  changed_at: Option[String] = None,
-  street_id: Int
+  changedAt: Option[String] = None,
+  streetId: Int
 )
 
 object TrafficLights {
-
+  
+  implicit val trafficLightsDecoder: Decoder[TrafficLights] = deriveDecoder
+  implicit val trafficLightsEncoder: Encoder[TrafficLights] = deriveEncoder
+  
+  /*
   implicit val trafficLightsDecoder: Decoder[TrafficLights] = new Decoder[TrafficLights] {
     final def apply(c: HCursor): Decoder.Result[TrafficLights] =
       for {
@@ -28,7 +34,7 @@ object TrafficLights {
         new TrafficLights(id, status, changed_at, street_id)
       }
   }
-
+   */
   implicit def trafficLightsDecoder[F[_]: Async]: EntityDecoder[F, TrafficLights] =
     jsonOf[F, TrafficLights]
 
@@ -39,5 +45,4 @@ object TrafficLights {
     Serializer.lift[F, TrafficLights](s => Async[F].pure(s.toString.getBytes("UTF-8")))
 
   implicit val showTl: Show[TrafficLights] = Show.fromToString
-  
 }
